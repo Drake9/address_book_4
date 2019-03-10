@@ -17,47 +17,6 @@ struct Adresat{
     string imie = "", nazwisko = "", numerTelefonu = "", email = "", adres = "";
 };
 
-void podzielString(string linia, char znak, vector<string> &wyrazy){
-
-    for(int i=0, j=0, dlugosc=linia.length(); j<=dlugosc; j++){
-        if(linia[j] == znak){
-            wyrazy.push_back(linia.substr(i,j-i));
-            i = j+1;
-        }
-    }
-}
-
-int wczytajUzytkownikowZPliku(vector<Uzytkownik> &uzytkownicy){
-    Uzytkownik uzytkownik;
-    int liczbaUzytkownikow = 0;
-    string linia, temp;
-	fstream plik;
-	vector<string> podzielonaLinia;
-
-	plik.open(nazwaPlikuZUzytkownikami.c_str(), ios::in);
-    if(plik.good()==false){
-        cout << "Nie udalo sie otworzyc pliku Uzytkownicy.txt. Zostanie utworzony nowy plik.";
-        Sleep(1500);
-        plik.open(nazwaPlikuZUzytkownikami.c_str(), ios::out | ios::app);
-        //exit(0);
-    }
-    else{
-        while(getline(plik,linia)){
-
-            podzielonaLinia.clear();
-            podzielString(linia, '|', podzielonaLinia);
-
-            uzytkownik.wczytaj(atoi (podzielonaLinia[0].c_str()), podzielonaLinia[1], podzielonaLinia[2]);
-
-            uzytkownicy.push_back(uzytkownik);
-            liczbaUzytkownikow++;
-        }
-    }
-    plik.close();
-
-    return liczbaUzytkownikow;
-}
-
 int wczytajAdresatowZPliku(vector<Adresat> &adresy, int idUzytkownika, int &idOstatniegoAdresata){
     int nrKontaktu = 0;
 	Adresat kontakt;
@@ -97,123 +56,6 @@ int wczytajAdresatowZPliku(vector<Adresat> &adresy, int idUzytkownika, int &idOs
     plik.close();
 
     return nrKontaktu;
-}
-
-int zaloguj(vector <Uzytkownik> &uzytkownicy, int &liczbaUzytkownikow){
-    string login, haslo;
-
-    system("cls");
-    cout << "Podaj login: " << endl;
-    getline(cin, login);
-
-    int i=0;
-    while(i < liczbaUzytkownikow){
-        if(uzytkownicy[i].zwrocLogin() == login){
-
-            for(int j=0; j<3; j++){
-                system("cls");
-                cout << "Podaj haslo. Pozostalo prob: " << 3-j << endl;
-                getline(cin, haslo);
-
-                if(uzytkownicy[i].zwrocHaslo() == haslo){
-
-                    cout << "Zalogowales sie.";
-                    Sleep(1000);
-                    return uzytkownicy[i].zwrocID();
-                }
-                cout << "Podane haslo jest nieprawidlowe.";
-                Sleep(2000);
-            }
-            cout << endl << "Podales 3 razy bledne haslo.";
-            Sleep(1500);
-            return 0;
-        }
-        i++;
-    }
-    cout << "Brak w bazie uzytkownika o podanym loginie.";
-    Sleep(1500);
-    return 0;
-}
-
-void zarejestrujUzytkownika(vector <Uzytkownik> &uzytkownicy, int &liczbaUzytkownikow){
-    fstream plik;
-    int id;
-    string login, haslo;
-
-    if(liczbaUzytkownikow > 0)
-        id = uzytkownicy[liczbaUzytkownikow-1].zwrocID() + 1;
-    else
-        id = 1;
-
-    system("cls");
-
-    do{
-        cout << "Podaj niepusta nazwe uzytkownika: " << endl;
-        getline(cin, login);
-    }while(login == "");
-
-    int i=0;
-    while(i < liczbaUzytkownikow){
-        if(uzytkownicy[i].zwrocLogin() == login){
-            cout << endl << "Istnieje juz uzytkownik o podanej nazwie. Podaj inna nazwe: " << endl;
-            getline(cin, login);
-            i=0;
-        }
-        else{
-            i++;
-        }
-    }
-
-    cout << "Podaj haslo uzytkownika: " << endl;
-    getline(cin, haslo);
-
-    Uzytkownik nowyUzytkownik(id, login, haslo);
-    uzytkownicy.push_back(nowyUzytkownik);
-    liczbaUzytkownikow++;
-
-    plik.open(nazwaPlikuZUzytkownikami.c_str(), ios::out | ios::app);
-    if(plik.good())
-        plik << id << "|" << login << "|" << haslo << "|" << endl;
-    else{
-        cout << "Nie udalo sie otworzyc pliku do zapisu. Program zostanie zamkniety.";
-        exit(0);
-    }
-    plik.close();
-
-    cout << "Nowy uzytkownik zostal zarejestrowany.";
-    Sleep(1500);
-
-}
-
-void zmienHaslo(vector <Uzytkownik> &uzytkownicy, int liczbaUzytkownikow, int idUzytkownika){
-    string haslo;
-    fstream plik;
-
-    system("cls");
-    cout << "Podaj nowe haslo: " << endl;
-    getline(cin, haslo);
-
-    for(int i=0; i<liczbaUzytkownikow; i++){
-        if(uzytkownicy[i].zwrocID() == idUzytkownika){
-            uzytkownicy[i].zmienHaslo(haslo);
-            break;
-        }
-    }
-
-    plik.open(nazwaPlikuZUzytkownikami.c_str(), ios::trunc | ios::out);
-    if(plik.good()==false){
-        cout << "Nie udalo sie otworzyc pliku. Program zostanie zamkniety.";
-        exit(0);
-    }
-
-    for(int i=0; i<liczbaUzytkownikow; i++){
-         plik << uzytkownicy[i].zwrocID() << "|" << uzytkownicy[i].zwrocLogin() << "|" << uzytkownicy[i].zwrocHaslo()  << "|" << endl;
-    }
-
-    plik.close();
-
-    cout << "Haslo zostalo zmienione.";
-    Sleep(1500);
 }
 
 int dodajKontakt(int idOstatniegoKontaktu, vector<Adresat> &adresy, int idUzytkownika){
@@ -527,29 +369,26 @@ void wypiszMenuGlowne(){
 }
 
 int main(){
-    int idUzytkownika = 0;
     int liczbaKontaktow = 0;
     int idOstatniegoAdresata = 0;
     char wybor = '0';
 
-    vector <Uzytkownik> uzytkownicy;
+    Uzytkownicy uzytkownicy;
     vector <Adresat> adresaci;
 
-    int liczbaUzytkownikow = wczytajUzytkownikowZPliku(uzytkownicy);
-
     while(true){
-        if(idUzytkownika == 0){
+        if(uzytkownicy.zwrocIdUzytkownika() == 0){
             wypiszMenuLogowania();
             wybor = getch();
 
             switch(wybor){
                 case '1':
-                    idUzytkownika = zaloguj(uzytkownicy, liczbaUzytkownikow);
-                    liczbaKontaktow = wczytajAdresatowZPliku(adresaci, idUzytkownika, idOstatniegoAdresata);
+                    uzytkownicy.zaloguj();
+                    liczbaKontaktow = wczytajAdresatowZPliku(adresaci, uzytkownicy.zwrocIdUzytkownika(), idOstatniegoAdresata);
                     break;
 
                 case '2':
-                    zarejestrujUzytkownika(uzytkownicy, liczbaUzytkownikow);
+                    uzytkownicy.zarejestrujUzytkownika(nazwaPlikuZUzytkownikami);
                     break;
 
                 case '0':
@@ -567,7 +406,7 @@ int main(){
 
             switch(wybor){
 			case '1':
-				idOstatniegoAdresata = dodajKontakt(idOstatniegoAdresata, adresaci, idUzytkownika);
+				idOstatniegoAdresata = dodajKontakt(idOstatniegoAdresata, adresaci, uzytkownicy.zwrocIdUzytkownika());
 				liczbaKontaktow++;
 				break;
 
@@ -592,11 +431,11 @@ int main(){
 				break;
 
             case '8':
-				zmienHaslo(uzytkownicy, liczbaUzytkownikow, idUzytkownika);
+				uzytkownicy.zmienHaslo(nazwaPlikuZUzytkownikami);
 				break;
 
 			case '0':
-				idUzytkownika = 0;
+				uzytkownicy.wyloguj();
 				adresaci.clear();
                 system("cls");
                 cout << "Wylogowales sie.";
